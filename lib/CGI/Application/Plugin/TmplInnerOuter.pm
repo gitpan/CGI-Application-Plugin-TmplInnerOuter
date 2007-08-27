@@ -8,7 +8,7 @@ use Exporter;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT);
 @ISA = qw/ Exporter /;
-$VERSION = sprintf "%d.%02d", q$Revision: 1.2 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.4 $ =~ /(\d+)/g;
 @EXPORT = (qw(
 _feed_merge
 _feed_vars
@@ -25,7 +25,9 @@ tmpl
 tmpl_main
 tmpl_output
 tmpl_set
+_debug_vars
 ));
+
 
 =pod
 
@@ -161,7 +163,11 @@ sub _tmpl {
 
    $self->{_tmpl} ||= {};
 
-   unless( $self->{_tmpl}->{$name} ) {      
+   unless( $self->{_tmpl}->{$name} ) {     
+      my $path = $self->tmpl_path;
+      $path ||= './';
+      $self->tmpl_path( $path );      
+     
       my $tmpl = get_tmpl($name,$self->_get_tmpl_default($name)) or warn("cant get [$name] template");
       $self->{_tmpl}->{$name} = $tmpl;       
    }
@@ -296,6 +302,16 @@ sub _feed_vars {
 }
 
 
+sub _debug_vars {
+   my $self = shift;
+   my $v = $self->_get_vars;
+   my @k = sort keys %$v;
+   scalar @k or return 1;
+   map { printf STDERR " [$_:$$v{$_}]" } @k;
+   print STDERR "\n";
+   return 1;
+}
+
 
 =head1 METHODS FOR HTML TEMPLATE VARIABLES
 
@@ -320,7 +336,8 @@ And then
 
 =head2 _get_vars()
 
-returns array ref of vars set with _set_vars()
+returns hash ref of vars set with _set_vars()
+this is what is injected into teh templates, both of them.
 
 =head2 _feed_vars()
 
@@ -331,6 +348,9 @@ feeds vars into template
    $self->_feed_vars($self->tmpl);
    $self->_feed_vars($self->tmpl_main);
 
+=head2 _debug_vars()
+
+print to stderrr all vars that will be fed
 
 =head1 OUTPUT
 
@@ -449,7 +469,9 @@ sub _feed_merge {
    return 1;
 }
 
+=head1 EXAMPLE USAGE
 
+For a great example of this module in action please see L<CGI::Application::Gallery>.
 
 =head1 AUTHOR
 
