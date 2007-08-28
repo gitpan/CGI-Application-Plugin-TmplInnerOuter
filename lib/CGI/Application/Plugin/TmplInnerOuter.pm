@@ -3,12 +3,11 @@ use strict;
 use warnings;
 use LEOCHARRE::DEBUG;
 use HTML::Template::Default 'get_tmpl';
-#$HTML::Template::Default::DEBUG =1;
 use Exporter;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT);
 @ISA = qw/ Exporter /;
-$VERSION = sprintf "%d.%02d", q$Revision: 1.4 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.7 $ =~ /(\d+)/g;
 @EXPORT = (qw(
 _feed_merge
 _feed_vars
@@ -273,8 +272,9 @@ sub _set_vars {
    
    $self->{_tmpl_vars} ||={};
 
-   for ( keys %vars ){
-      $self->{_tmpl_vars}->{$_} = $vars{$_};
+   for ( keys %vars ){      
+      my $key = $_; my $val = $vars{$key}; defined $val or next;
+      $self->{_tmpl_vars}->{$key} = $val; 
    };
 
    return 1;   
@@ -290,24 +290,36 @@ sub _feed_vars {
    my $self = shift;
    my $tmpl = shift;
    defined $tmpl or confess('missing arg');
-
+   debug('start');
    my $vars = $self->_get_vars;
    VARS : for( keys %$vars){ 
 			my $key = $_; 
-         my $val = $vars->{$key} or next VARS;			
-			debug("[$key:$val]\n");			
+         my $val = $vars->{$key};
+         defined $val or next VARS;			
 			$tmpl->param( $_ => $vars->{$_} );
 	}
+   debug("ok\n");
    return 1;
 }
 
 
 sub _debug_vars {
-   my $self = shift;
+   my $self = shift; 
+   my $neat_layout = shift; 
+   $neat_layout ||=0;
+   
    my $v = $self->_get_vars;
    my @k = sort keys %$v;
-   scalar @k or return 1;
-   map { printf STDERR " [$_:$$v{$_}]" } @k;
+   scalar @k or return 1;   
+   
+   debug();
+   if($neat_layout){
+   	map { printf STDERR " %18s : %s\n", $_, $v->{$_} } @k;			
+   }
+   
+   else {   
+      map { printf STDERR " %s'%s', ", $_, $v->{$_} } @k;
+   }
    print STDERR "\n";
    return 1;
 }
@@ -334,6 +346,12 @@ And then
 
    $self->_feed_vars( $tmpl);
 
+It is NOT presently supported to pass undefined values, if you do, they
+are silently ignored.
+
+   $self->_feed_vars( PARAM => undef );
+
+
 =head2 _get_vars()
 
 returns hash ref of vars set with _set_vars()
@@ -350,7 +368,8 @@ feeds vars into template
 
 =head2 _debug_vars()
 
-print to stderrr all vars that will be fed
+print to STDERR all vars that will be fed, sorted
+optional arg is boolean to print in an orderly fashion
 
 =head1 OUTPUT
 
@@ -417,7 +436,8 @@ Maybe you have a navigation loop for example that you want to insert just at the
 
 If so.. here is one example:
 
-
+   no warnings 'redefine';
+   
    sub tmpl_output {
    	     my $self = shift;
       
@@ -425,6 +445,8 @@ If so.. here is one example:
       
            $self->_feed_vars_all;  
            $self->_feed_merge;
+           $self->_debug_vars();  # prints to STDERR all the vars
+           $self->_debug_vars(1); # prints to STDERR all the vars, in an orderly fashion
 
            return $self->_tmpl_outer->output;
       
@@ -459,7 +481,7 @@ sub tmpl_output {
 sub _feed_vars_all {
    my $self = shift;
    $self->_feed_vars( $self->_tmpl_inner );   
-   $self->_feed_vars( $self->_tmpl_outer);   
+   $self->_feed_vars( $self->_tmpl_outer );   
    return 1;
 }
 

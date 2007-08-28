@@ -36,6 +36,13 @@ sub rm_test {
    $self->_set_vars(
       ONE => 'this is 1',
       TWO => 'this is 2',
+      PLACES => [
+         { NAME => 'MACHU PICHU' },
+      ],
+      USER_NAME  => 'Quino',
+      USER_PHONE => '301-231-2244',
+      USER_AND  => 'None really',
+      TEST_THIS => undef,
    );
 
 
