@@ -3,11 +3,11 @@ use strict;
 use warnings;
 use LEOCHARRE::DEBUG;
 use HTML::Template::Default 'get_tmpl';
-use Exporter;
+require Exporter;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT);
 @ISA = qw/ Exporter /;
-$VERSION = sprintf "%d.%02d", q$Revision: 1.7 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.11 $ =~ /(\d+)/g;
 @EXPORT = (qw(
 _feed_merge
 _feed_vars
@@ -23,9 +23,12 @@ _tmpl_outer
 tmpl
 tmpl_main
 tmpl_output
+tmpl_inner_name
+tmpl_inner_name_set
 tmpl_set
 _debug_vars
 ));
+
 
 
 =pod
@@ -184,10 +187,24 @@ sub _set_tmpl_default {
    return 1;
 }
 
+sub tmpl_inner_name {
+   my $self = shift;
+   $self->{__tmpl_inner_name}||= $self->get_current_runmode or die('no runmode');
+   return $self->{__tmpl_inner_name};
+}
+sub tmpl_inner_name_set {
+   my ($self,$name) = @_;
+   defined $name or confess('missing arg');
+   $self->{__tmpl_inner_name} = $name;
+   return $name;
+}
+
 sub _get_tmpl_name {
-   my $self = shift; defined $self or croak;
-   $self->get_current_runmode or warn('no runmode, returning undef') and return;
-   my $name = $self->get_current_runmode.'.html';
+   my $self = shift; 
+   defined $self or croak;
+   #$self->get_current_runmode or warn('no runmode, returning undef') and return;
+   
+   my $name = $self->tmpl_inner_name.'.html';
    return $name;   
 }
 
@@ -198,7 +215,7 @@ sub _get_tmpl_default {
    $self->{_tmpl_default} ||={};
 
    if ($name eq 'main.html' and ! defined $self->{_tmpl_default}->{'main.html'}){
-      debug("main.html was not defined, using default.\n");
+      debug("main.html was not defined, using default hard coded main.html template.\n");
       $self->_set_tmpl_default(
       q{<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
       <html>
@@ -220,6 +237,11 @@ sub _get_tmpl_default {
 All methods are exported.
 
 =cut
+
+=head2 tmpl_inner_name() and tmpl_inner_name_set()
+
+name of inner template name, by default we use the current runmode, if you pass string 'this' to set, 
+will look for this.html for the inner template
 
 =head2 _set_tmpl_default()
 
