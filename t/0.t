@@ -5,7 +5,6 @@ use warnings;
 #use CGI::Application::Plugin::TmplInnerOuter;
 use lib './t';
 use TestOne;
-$TestOne::DEBUG = 1;
 
 ok(1);
 

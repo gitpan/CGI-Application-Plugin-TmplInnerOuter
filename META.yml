@@ -1,16 +1,26 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         CGI-Application-Plugin-TmplInnerOuter
-version:      1.11
-version_from: lib/CGI/Application/Plugin/TmplInnerOuter.pm
-installdirs:  site
+--- #YAML:1.0
+name:               CGI-Application-Plugin-TmplInnerOuter
+version:            1.13
+abstract:           ~
+author:  []
+license:            unknown
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
 requires:
-    CGI::Application:              4
-    Data::Dumper:                  2
-    Exporter:                      5
-    HTML::Template::Default:       1
-    LEOCHARRE::DEBUG:              1
-    Test::Simple:                  0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+    Carp:                 1
+    CGI::Application:     4
+    Data::Dumper:         0
+    Exporter:             5
+    HTML::Template::Default:  1.07
+    Test::Simple:         0
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.54
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

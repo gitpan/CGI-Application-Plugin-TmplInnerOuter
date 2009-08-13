@@ -3,7 +3,6 @@ use base 'CGI::Application';
 use strict;
 use warnings;
 use CGI::Application::Plugin::TmplInnerOuter;
-use LEOCHARRE::DEBUG;
 sub setup {
    my $self = shift;
    $self->start_mode('test2');
@@ -61,6 +60,6 @@ sub rm_test2 {
 
 
 
-
+sub debug { print STDERR "@_\n" }
 
 1;
